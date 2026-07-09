@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Analyzer Dashboard</title>
+    <style>
+        :root {
+            --primary: #334155;
+            --primary-light: #475569;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --bg: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            gap: 0;
+            list-style: none;
+        }
+
+        nav a {
+            padding: 10px 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+            background: var(--bg);
+        }
+
+        nav a.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--bg);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .tab-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: var(--text);
+        }
+
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        small {
+            font-size: 12px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.08);
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button, .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .status-box {
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+            display: none;
+            border-left: 4px solid;
+            background: rgba(16, 185, 129, 0.05);
+            border-left-color: var(--success);
+        }
+
+        .status-box.active {
+            display: block;
+            background: rgba(16, 185, 129, 0.05);
+            border-left-color: var(--success);
+            color: #047857;
+        }
+
+        .status-box.inactive {
+            display: block;
+            background: rgba(239, 68, 68, 0.05);
+            border-left-color: var(--error);
+            color: #991b1b;
+        }
+
+        .status-box strong {
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 32px;
+        }
+
+        .info-box h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Alert Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-critical { color: #ef4444; }
+        .stat-high { color: #dc2626; }
+        .stat-medium { color: #f59e0b; }
+        .stat-low { color: #10b981; }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        /* Table Styles */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+        }
+
+        tr.alert-row td {
+            transition: background 0.2s ease;
+        }
+
+        tr.severity-critical td {
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        tr.severity-high td {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        tr.severity-medium td {
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        tr.severity-low td {
+            background: rgba(16, 185, 129, 0.10);
+        }
+
+        tr.severity-critical td:first-child,
+        tr.severity-high td:first-child,
+        tr.severity-medium td:first-child,
+        tr.severity-low td:first-child {
+            border-left: 4px solid transparent;
+        }
+
+        tr.severity-critical td:first-child { border-left-color: #ef4444; }
+        tr.severity-high td:first-child { border-left-color: #dc2626; }
+        tr.severity-medium td:first-child { border-left-color: #f59e0b; }
+        tr.severity-low td:first-child { border-left-color: #10b981; }
+
+        .severity-label {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .empty {
+            padding: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            background: var(--bg-white);
+            padding: 20px 30px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            main { padding: 20px 16px; }
+            .header-content { flex-direction: column; gap: 16px; }
+            .checkbox-group { flex-direction: column; gap: 12px; }
+            .button-group { flex-direction: column; align-items: flex-start; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <div class="logo">🔍 Log Analyzer</div>
+                <nav>
+                    <a class="nav-link active" onclick="switchTab('config')">Configuration</a>
+                    <a class="nav-link" onclick="switchTab('alerts')">Alerts</a>
+                    <a class="nav-link" onclick="switchTab('logs')">Logs</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <div class="tab-container">
+
+                <!-- Configuration Tab -->
+                <div id="config" class="tab-content active">
+                    <h1 class="page-title">Configuration</h1>
+
+                    <form method="POST" action="/configure" id="config-form">
+                        <div class="card">
+                            <div class="card-title">Log File Configuration</div>
+                            <div class="form-group">
+                                <label for="log_path">Log File Path</label>
+                                <input type="text" id="log_path" name="log_path" value="{{ log_path }}" placeholder="logs/application.log">
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Log Levels</div>
+                            <div class="form-group">
+                                <label>Predefined Levels (used if custom levels are empty)</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="info" name="log_levels" value="INFO" {{ 'checked' if 'INFO' in log_levels else '' }}>
+                                        <label for="info">INFO</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="warn" name="log_levels" value="WARN" {{ 'checked' if 'WARN' in log_levels else '' }}>
+                                        <label for="warn">WARNING</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="error" name="log_levels" value="ERROR" {{ 'checked' if 'ERROR' in log_levels else '' }}>
+                                        <label for="error">ERROR</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="custom_levels">Custom Log Levels (comma-separated, overrides checkboxes)</label>
+                                <input type="text" id="custom_levels" name="custom_levels" value="{{ custom_levels or '' }}" placeholder="e.g., INFO, CRITICAL, HIGH, DEBUG">
+                                <small style="color: var(--text-muted); display: block; margin-top: 6px;">When filled, only these levels will be monitored. Leave empty to use the checkboxes above.</small>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Keywords Filter</div>
+                            <div class="form-group">
+                                <label for="keywords">Keywords (comma-separated, optional)</label>
+                                <input type="text" id="keywords" name="keywords" value="{{ keywords }}" placeholder="failed, timeout, connection">
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="btn-primary">💾 Save Configuration</button>
+                            <button type="button" class="btn-success" onclick="startMonitoring()">▶️ Start Monitoring</button>
+                            <button type="button" class="btn-danger" onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+                        </div>
+                    </form>
+
+                    <div class="status-box active" id="status-active" style="display: none;">
+                        <strong>✓ Monitoring Active</strong> — Logs are being analyzed in real-time
+                    </div>
+                    <div class="status-box inactive" id="status-inactive" style="display: none;">
+                        <strong>✗ Monitoring Inactive</strong> — Click "Start Monitoring" to begin
+                    </div>
+
+                    <div class="info-box">
+                        <h4>Getting Started</h4>
+                        <ul>
+                            <li>Configure your log file path and select log levels to monitor</li>
+                            <li>Add keywords to filter specific logs (optional)</li>
+                            <li>Click Save Configuration, then Start Monitoring</li>
+                            <li>Visit the Alerts tab to see detected anomalies</li>
+                            <li>Visit the Logs tab to see all parsed logs</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Alerts Tab -->
+                <div id="alerts" class="tab-content">
+                    <h1 class="page-title">Alerts Dashboard</h1>
+
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number stat-critical" id="stat-critical">0</div>
+                            <div class="stat-label">Critical</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-high" id="stat-high">0</div>
+                            <div class="stat-label">High</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-medium" id="stat-medium">0</div>
+                            <div class="stat-label">Medium</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-low" id="stat-low">0</div>
+                            <div class="stat-label">Low</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Recent Alerts</div>
+                        <div class="button-group">
+                            <button class="btn-primary" onclick="loadAlerts()">🔄 Refresh</button>
+                            <button class="btn-danger" onclick="clearAlerts()">🗑️ Clear</button>
+                            <span class="status-text" id="alerts-status">Idle</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="alerts-table" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Detected</th>
+                                        <th>Log Time</th>
+                                        <th>Severity</th>
+                                        <th>Level</th>
+                                        <th>Service</th>
+                                        <th>Anomaly Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alerts-body"></tbody>
+                            </table>
+                            <div class="empty" id="alerts-empty">No alerts found.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div id="logs" class="tab-content">
+                    <h1 class="page-title">Logs Viewer</h1>
+
+                    <div class="card">
+                        <div class="card-title">Recent Logs</div>
+                        <div class="button-group">
+                            <button class="btn-primary" onclick="loadLogs()">🔄 Refresh</button>
+                            <span class="status-text" id="logs-status">Idle</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="logs-table" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Level</th>
+                                        <th>Service</th>
+                                        <th>Anomaly Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logs-body"></tbody>
+                            </table>
+                            <div class="empty" id="logs-empty">No logs found.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer>
+            <p>🔍 Log Analyzer &bullet; Real-time anomaly detection &bullet; ML-powered insights</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Mark nav link as active
+            event.target.classList.add('active');
+
+            // Load data for the tab
+            if (tabName === 'alerts') {
+                loadAlerts();
+            } else if (tabName === 'logs') {
+                loadLogs();
+            }
+        }
+
+        // Configuration Functions
+        function startMonitoring() {
+            fetch('/start_monitoring', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        updateStatus(true);
+                        alert('Monitoring started successfully!');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(e => alert('Error: ' + e));
+        }
+
+        function stopMonitoring() {
+            fetch('/stop_monitoring', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        updateStatus(false);
+                        alert('Monitoring stopped');
+                    }
+                })
+                .catch(e => alert('Error: ' + e));
+        }
+
+        function updateStatus(active) {
+            document.getElementById('status-active').style.display = active ? 'block' : 'none';
+            document.getElementById('status-inactive').style.display = active ? 'none' : 'block';
+        }
+
+        // Alert Functions
+        let notifiedAlerts = new Set();
+
+        function showNotification(severity, service, level) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const icon = severity.toLowerCase() === 'critical' ? '🔴' : severity.toLowerCase() === 'high' ? '🟠' : '';
+                new Notification(`${icon} ${severity} Alert`, {
+                    body: `${service} - ${level}`,
+                    requireInteraction: severity.toLowerCase() === 'critical'
+                });
+            }
+        }
+
+        function formatAnomalyScore(value) {
+            if (value === null || value === undefined || value === '') {
+                return 'N/A';
+            }
+
+            const numericScore = Number(value);
+            if (!Number.isFinite(numericScore)) {
+                return 'N/A';
+            }
+
+            // Most scores are stored as 0..1 values; fall back to raw value if already percentage-like.
+            const percent = (numericScore >= 0 && numericScore <= 1)
+                ? numericScore * 100
+                : numericScore;
+
+            return `${percent.toFixed(2)}%`;
+        }
+
+        function loadAlerts() {
+            const statusEl = document.getElementById('alerts-status');
+            statusEl.textContent = 'Loading...';
+
+            fetch('/api/alerts')
+                .then(r => r.json())
+                .then(data => {
+                    const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+                    const counts = data.alert_counts || {};
+
+                    // Update stats
+                    document.getElementById('stat-critical').textContent = counts['Critical'] || 0;
+                    document.getElementById('stat-high').textContent = counts['High'] || 0;
+                    document.getElementById('stat-medium').textContent = counts['Medium'] || 0;
+                    document.getElementById('stat-low').textContent = counts['Low'] || 0;
+
+                    // Update table
+                    const table = document.getElementById('alerts-table');
+                    const body = document.getElementById('alerts-body');
+                    const empty = document.getElementById('alerts-empty');
+                    body.innerHTML = '';
+
+                    if (alerts.length === 0) {
+                        table.style.display = 'none';
+                        empty.style.display = 'block';
+                        statusEl.textContent = 'No alerts';
+                        return;
+                    }
+
+                    alerts.forEach(alert => {
+                        // Show browser notification for Critical/High - always, regardless of configuration
+                        const alertKey = `${alert.id}-${alert.severity}`;
+                        if (!notifiedAlerts.has(alertKey)) {
+                            const sevLower = (alert.severity || '').toLowerCase();
+                            if (sevLower === 'critical' || sevLower === 'high') {
+                                notifiedAlerts.add(alertKey);
+                                showNotification(alert.severity, alert.service, alert.log_level);
+                            }
+                        }
+
+                        const row = document.createElement('tr');
+                        const severity = (alert.severity || '').toLowerCase();
+                        row.classList.add('alert-row');
+                        if (severity) {
+                            row.classList.add(`severity-${severity}`);
+                        }
+                        row.innerHTML = `
+                            <td>${alert.timestamp || ''}</td>
+                            <td>${alert.log_timestamp || ''}</td>
+                            <td><span class="severity-label">${alert.severity || ''}</span></td>
+                            <td>${alert.log_level || ''}</td>
+                            <td>${alert.service || ''}</td>
+                            <td>${formatAnomalyScore(alert.anomaly_score)}</td>
+                        `;
+                        body.appendChild(row);
+                    });
+
+                    table.style.display = 'table';
+                    empty.style.display = 'none';
+                    statusEl.textContent = `Loaded ${alerts.length} alerts`;
+                })
+                .catch(() => {
+                    statusEl.textContent = 'Failed to load';
+                });
+        }
+
+        function clearAlerts() {
+            if (!confirm('Are you sure you want to clear all alerts?')) return;
+
+            fetch('/api/clear_alerts', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadAlerts();
+                        alert('Alerts cleared');
+                    }
+                })
+                .catch(() => alert('Error clearing alerts'));
+        }
+
+        // Logs Functions
+        function loadLogs() {
+            const statusEl = document.getElementById('logs-status');
+            statusEl.textContent = 'Loading...';
+
+            fetch('/api/logs')
+                .then(r => r.json())
+                .then(data => {
+                    const logs = Array.isArray(data.logs) ? data.logs : [];
+                    const table = document.getElementById('logs-table');
+                    const body = document.getElementById('logs-body');
+                    const empty = document.getElementById('logs-empty');
+                    body.innerHTML = '';
+
+                    if (logs.length === 0) {
+                        table.style.display = 'none';
+                        empty.style.display = 'block';
+                        statusEl.textContent = 'No logs';
+                        return;
+                    }
+
+                    logs.slice().reverse().forEach(log => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${log.timestamp || ''}</td>
+                            <td>${log.level || ''}</td>
+                            <td>${log.service || ''}</td>
+                            <td>${formatAnomalyScore(log.anomaly_score)}</td>
+                        `;
+                        body.appendChild(row);
+                    });
+
+                    table.style.display = 'table';
+                    empty.style.display = 'none';
+                    statusEl.textContent = `Loaded ${logs.length} logs`;
+                })
+                .catch(() => {
+                    statusEl.textContent = 'Failed to load';
+                });
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            // Request notification permission for browser alerts
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
+            fetch('/monitoring_status')
+                .then(r => r.json())
+                .then(data => updateStatus(data.monitoring))
+                .catch(() => updateStatus(false));
+
+            // Auto-refresh alerts every 1 second to catch critical/high alerts faster
+            setInterval(() => {
+                if (document.getElementById('alerts').classList.contains('active')) {
+                    loadAlerts();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

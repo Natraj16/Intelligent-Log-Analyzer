@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+.venv-*/
+venv/
+env/
+
+# Logs
+logs/
+*.log
+app.log
+
+# Datasets and Data
+datasets/
+*.csv
+*.json
+
+# If config.json contains sensitive keys/passwords, you might want to uncomment the line below:
+# config.json
+
+# Machine Learning Models
+*.pkl
+*.h5
+*.pt
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+docs/
+
+# Setup Scripts
+restructure.py
