@@ -1,4 +1,4 @@
-# Intelligent Log Analyzer System
+# Intelligent Log Analyzer System 
 
 > 🚀 A Python Flask web application that monitors log files in real-time, detects anomalies using machine learning, and generates severity-based alerts.
 
